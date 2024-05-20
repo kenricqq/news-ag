@@ -1,0 +1,83 @@
+import { writable, type Writable } from 'svelte/store';
+
+interface Quote {
+	quoteText: string;
+	id: number;
+}
+
+// listen to changes on main quote in top box
+export const bookmark: Writable<boolean> = writable(false);
+
+export const categories: Writable<Set<string>> = writable(new Set());
+
+export const quote: Writable<string> = writable('');
+
+export const quotes: Writable<Quote[]> = writable([]);
+
+export const addQuote = (quoteText: string) => {
+	bookmark.set(true);
+	quotes.update((quotes) => {
+		// check existence & empty strings
+		if (
+			quotes.filter((quoteObj) => quoteText === quoteObj.quoteText).length > 0 ||
+			quoteText.trim() == ''
+		) {
+			return quotes;
+		}
+
+		const newQuotes = [...quotes, { quoteText, id: Date.now() }];
+		localStorage.setItem('quotes', JSON.stringify(newQuotes));
+		return newQuotes;
+	});
+};
+
+export const deleteQuote = (quoteText: string) => {
+	bookmark.set(false);
+	quotes.update((quotes) => {
+		const newQuotes = quotes.filter((quoteObj) => quoteObj.quoteText !== quoteText);
+		localStorage.setItem('quotes', JSON.stringify(newQuotes));
+		return newQuotes;
+	});
+};
+
+export const resetQuotes = () => {
+	quotes.set([]);
+	localStorage.removeItem('quotes');
+};
+
+export const generateQuote = async (preferTags: Array<string> = []) => {
+	// change preferTags to string for api call
+	let tagsParam = '';
+	if (preferTags.length > 0) {
+		tagsParam += '&tags=' + preferTags[0];
+		preferTags.shift();
+
+		if (preferTags.length > 0) {
+			preferTags.forEach((tag) => {
+				tagsParam += '|' + tag;
+			});
+			preferTags.shift();
+		}
+	}
+	// example: tags=history|civil-rights
+
+	// generate quote
+	const data = await fetch('https://api.quotable.io/random?maxLength=200' + tagsParam)
+		.then((response) => response.json())
+		.catch((error) => {
+			console.log(`Error: ${error}`);
+		});
+
+	// experiment
+	const data2 = await fetch(
+		'https://api.nytimes.com/svc/topstories/v2/home.json?api-key=45MlLuJAQx47v0yebPYou1uplbNxAQnX'
+	)
+		.then((response) => response.json())
+		.catch((error) => console.log(`Error: ${error}`));
+	console.log(data2.results);
+
+	// reset bookmark for new quote
+	bookmark.set(false);
+
+	quote.set(data.content);
+};
