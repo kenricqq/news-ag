@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { deleteQuote } from '$stores/articleStore';
+	import { deleteQuote } from '$stores/articleStore'
 
 	interface Quote {
-		quoteText: string;
-		id: number;
+		quoteText: string
+		id: number
 	}
 
-	export let quoteObj: Quote;
+	export let quoteObj: Quote
 </script>
 
 <blockquote

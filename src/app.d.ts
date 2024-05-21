@@ -8,6 +8,19 @@ declare global {
 		// interface PageState {}
 		// interface Platform {}
 	}
+
+	interface Story {
+		// id: number;
+		section: string
+		title: string
+		abstract: string
+		url: string
+		[key: string]: any
+	}
+
+	interface Stories {
+		[sectionQuery: string]: Story[]
+	}
 }
 
-export {};
+export {}

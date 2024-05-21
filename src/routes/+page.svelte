@@ -1,30 +1,83 @@
-<script>
-	import { onMount } from 'svelte';
-	import { quotes } from '$stores/articleStore';
-	import SavedQuote from '$lib/components/SavedQuote.svelte';
-	import QuoteForm from '$lib/components/QuoteForm.svelte';
+<script lang="ts">
+	import { updateStories, sections } from '$stores/storyStore'
+	import { onMount } from 'svelte'
+	import { Select, ScrollArea } from '$ui'
+	// import { generateStories } from './api/stories/+server';
+
+	export let data
+
+	$: console.log('data', data, data.sectionQuery)
+	let sectionObj = {
+		value: data.sectionQuery,
+		label: data.sectionQuery
+	}
+
+	import { localStorageStore } from '$stores/localStorageStore'
+
+	let lastFetched: any, selectedStories: any, discardedStories: any, newStories: any
 
 	onMount(() => {
-		// get saved quotes
-		const savedQuotes = localStorage.getItem('quotes');
-		if (savedQuotes) {
-			quotes.set(JSON.parse(savedQuotes));
+		lastFetched = localStorageStore('lastFetched', new Date().toISOString())
+		selectedStories = localStorageStore('selectedStories', {})
+		discardedStories = localStorageStore('discardedStories', {})
+		newStories = localStorageStore('newStories', {})
+
+		if (data.sectionQuery) {
+			// if query is valid, fetch new stories
+			updateStories(selectedStories, discardedStories, newStories, lastFetched, data)
 		}
-	});
+	})
 </script>
 
-<div class="container mx-auto flex h-[0vh] max-w-4xl flex-col p-3 pb-9">
-	<!-- add quote to list -->
-	<div class="flex-shrink-0">
-		<QuoteForm />
-	</div>
+{data.sectionQuery}
 
-	<h2 class="p-3 text-xl underline decoration-4">Bookmarked Quotes</h2>
+<Select.Root portal={null} bind:selected={sectionObj}>
+	<Select.Trigger class="w-[180px]">
+		<Select.Value placeholder="Select a section" />
+	</Select.Trigger>
+	<Select.Content>
+		<Select.Group>
+			<ScrollArea class="h-[200px] p-3">
+				{#each sections as section}
+					<Select.Item value={section} label={section}>{section}</Select.Item>
+				{/each}
+			</ScrollArea>
+		</Select.Group>
+	</Select.Content>
+</Select.Root>
 
-	<section class="flex-grow px-3">
-		{#each $quotes as quoteObj}
-			<!-- pass quote object to SavedQuote -->
-			<SavedQuote {quoteObj} />
-		{/each}
-	</section>
-</div>
+<button on:click={() => console.log(`get ${sectionObj.value} data`)}>Get Data</button>
+
+<!-- 
+{#if !data.stories}
+	<p>loading...</p>
+{:else}
+	{#each data.stories as story}
+		<div class="m-3 bg-blue-500 p-5">
+			<a href={story.url}>{story.title}</a>
+		</div>
+	{/each}
+{/if} -->
+
+<!-- <button on:click={handleClick}>gen stories</button> -->
+<!-- {#each data.stories as story}
+	<h1>
+		{story.title}
+	</h1>
+{/each} -->
+
+<!-- 
+{#await getStories()}
+	loading...
+{:then stories}
+	{#each stories as story}
+		<div class="bg-blue-500 p-5 m-3">
+			<a href={story.url}>{story.title}</a>
+			<p>{story.abstract}</p>
+			<p>{story.section}</p>
+		</div>
+	{/each}
+	<p>showing {stories.length} stories</p>
+{:catch error}
+	<p>error: {error.message}</p>
+{/await} -->
