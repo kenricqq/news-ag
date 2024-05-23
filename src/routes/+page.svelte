@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { updateStories, sections } from '$stores/storyStore'
+	import type { Writable } from 'svelte/store'
 	import { onMount } from 'svelte'
-	import { Select, ScrollArea } from '$ui'
+	import { Select, ScrollArea, Tabs } from '$ui'
+	import Story from '$lib/components/Story.svelte'
 	// import { generateStories } from './api/stories/+server';
 
 	export let data
@@ -14,24 +16,46 @@
 
 	import { localStorageStore } from '$stores/localStorageStore'
 
-	let lastFetched: any, selectedStories: any, discardedStories: any, newStories: any
+	let lastFetched: any, storiesStore: Writable<StoriesDict>, discardStore: Writable<StoriesDict>
 
 	onMount(() => {
 		lastFetched = localStorageStore('lastFetched', new Date().toISOString())
-		selectedStories = localStorageStore('selectedStories', {})
-		discardedStories = localStorageStore('discardedStories', {})
-		newStories = localStorageStore('newStories', {})
+		discardStore = localStorageStore('discardStore', {})
+		storiesStore = localStorageStore('storiesStore', {})
 
 		if (data.sectionQuery) {
 			// if query is valid, fetch new stories
-			updateStories(selectedStories, discardedStories, newStories, lastFetched, data)
+			updateStories(storiesStore, discardStore, lastFetched, data)
 		}
 	})
 </script>
 
-{data.sectionQuery}
+<div class="container mx-auto flex max-w-4xl flex-col p-3 pb-9">
+	<Tabs.Root value="stories" class="w-full">
+		<Tabs.List class="w-full">
+			<Tabs.Trigger value="stories" class="w-full">Stories</Tabs.Trigger>
+			<Tabs.Trigger value="selected" class="w-full">Selected</Tabs.Trigger>
+		</Tabs.List>
+		<Tabs.Content value="stories">
+			<section class="flex-grow px-3">
+				{#if $storiesStore}
+					{#each Object.keys($storiesStore) as key}
+						<h1 class="p-5 text-3xl underline">
+							{key.toUpperCase()}
+						</h1>
+						{#each $storiesStore[key] as story}
+							<Story {story} />
+						{/each}
+					{/each}
+				{/if}
+			</section>
+		</Tabs.Content>
+		<Tabs.Content value="selected">Change your password here.</Tabs.Content>
+	</Tabs.Root>
+</div>
 
-<Select.Root portal={null} bind:selected={sectionObj}>
+<!-- new query based on section selection -->
+<!-- <Select.Root portal={null} bind:selected={sectionObj}>
 	<Select.Trigger class="w-[180px]">
 		<Select.Value placeholder="Select a section" />
 	</Select.Trigger>
@@ -45,39 +69,4 @@
 		</Select.Group>
 	</Select.Content>
 </Select.Root>
-
-<button on:click={() => console.log(`get ${sectionObj.value} data`)}>Get Data</button>
-
-<!-- 
-{#if !data.stories}
-	<p>loading...</p>
-{:else}
-	{#each data.stories as story}
-		<div class="m-3 bg-blue-500 p-5">
-			<a href={story.url}>{story.title}</a>
-		</div>
-	{/each}
-{/if} -->
-
-<!-- <button on:click={handleClick}>gen stories</button> -->
-<!-- {#each data.stories as story}
-	<h1>
-		{story.title}
-	</h1>
-{/each} -->
-
-<!-- 
-{#await getStories()}
-	loading...
-{:then stories}
-	{#each stories as story}
-		<div class="bg-blue-500 p-5 m-3">
-			<a href={story.url}>{story.title}</a>
-			<p>{story.abstract}</p>
-			<p>{story.section}</p>
-		</div>
-	{/each}
-	<p>showing {stories.length} stories</p>
-{:catch error}
-	<p>error: {error.message}</p>
-{/await} -->
+<button on:click={() => console.log(`get ${sectionObj.value} data`)}>Get Data</button> -->

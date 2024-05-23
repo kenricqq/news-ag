@@ -1,4 +1,4 @@
-import { get, writable, type Writable } from 'svelte/store'
+import { get, type Writable } from 'svelte/store'
 
 export const sections = [
 	'arts',
@@ -30,26 +30,13 @@ export const sections = [
 ]
 
 export const updateStories = (
-	selectedStore: Writable<Stories>,
-	discardedStore: Writable<Stories>,
-	newStore: Writable<Stories>,
+	storiesStore: Writable<StoriesDict>,
+	discardStore: Writable<StoriesDict>,
 	lastFetched: Writable<string>,
 	data: any
 ) => {
 	// lastUpdate, section, stories
-	const { stories } = data
-	const finalStories = stories.map((story: any) => {
-		return {
-			section: story.section,
-			title: story.title,
-			url: story.url,
-			abstract: story.abstract,
-			published_date: story.published_date,
-			multimedia: story.multimedia
-		}
-	})
-
-	console.log('stories in updates', finalStories)
+	const { storiesArr } = data
 
 	const prevD = new Date(get(lastFetched))
 	const currD = new Date()
@@ -60,29 +47,22 @@ export const updateStories = (
 	// const reset = true
 
 	if (reset) {
-		newStore.set({})
-		selectedStore.set({})
-		discardedStore.set({})
+		storiesStore.set({})
+		discardStore.set({})
 	}
-	const newStories = get(newStore)
-	const selectedStories = get(selectedStore)
-	const discardStories = get(selectedStore)
+	const stories = get(storiesStore)
+	const discard = get(discardStore)
 
-	for (let story of finalStories) {
-		if (
-			reset ||
-			(!containsStory(selectedStories, story) &&
-				!containsStory(discardStories, story) &&
-				!containsStory(newStories, story))
-		) {
-			if (!newStories[story.section]) newStories[story.section] = []
-			newStories[story.section].push(story)
+	for (let story of storiesArr) {
+		if (reset || (!containsStory(stories, story) && !containsStory(discard, story))) {
+			if (!stories[story.section]) stories[story.section] = []
+			stories[story.section].push(story)
 		}
 	}
-	newStore.set(newStories)
+	storiesStore.set(stories)
 }
 
-const containsStory = (stories: Stories, story: Story) => {
+const containsStory = (stories: StoriesDict, story: Story) => {
 	// compare obj url
 	if (stories[story.section] && stories[story.section].some((s) => s.url == story.url)) {
 		return true
@@ -90,16 +70,10 @@ const containsStory = (stories: Stories, story: Story) => {
 	return false
 }
 
-export const selectStory = (
-	selectedStore: Writable<Stories>,
-	newStore: Writable<Stories>,
-	story: Story
-) => {}
+// export const toggleSelectStory = (storiesStore: Writable<StoriesDict>, story: Story) => {}
 
-export const discardStory = (
-	selectedStore: Writable<Stories>,
-	newStore: Writable<Stories>,
-	story: Story
-) => {}
-
-// selectedStories U discardStories U newStories: makes total stories; in otherwords, they do not overlap
+// export const toggleDiscardStory = (
+// 	storiesStore: Writable<StoriesDict>,
+// 	discardStore: Writable<StoriesDict>,
+// 	story: Story
+// ) => {}

@@ -13,12 +13,15 @@ declare global {
 		// id: number;
 		section: string
 		title: string
-		abstract: string
 		url: string
+		description: string
+		selected: boolean
+		published_date: string
+		multimedia: any
 		[key: string]: any
 	}
 
-	interface Stories {
+	interface StoriesDict {
 		[sectionQuery: string]: Story[]
 	}
 }
