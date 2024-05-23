@@ -2,13 +2,13 @@
 	import { updateStories, sections } from '$stores/storyStore'
 	import type { Writable } from 'svelte/store'
 	import { onMount } from 'svelte'
-	import { Select, ScrollArea, Tabs } from '$ui'
+	import { Select, ScrollArea, Tabs, Carousel } from '$ui'
 	import Story from '$lib/components/Story.svelte'
 	// import { generateStories } from './api/stories/+server';
 
 	export let data
 
-	$: console.log('data', data, data.sectionQuery)
+	// $: console.log('data', data, data.sectionQuery)
 	let sectionObj = {
 		value: data.sectionQuery,
 		label: data.sectionQuery
@@ -30,27 +30,41 @@
 	})
 </script>
 
-<div class="container mx-auto flex max-w-4xl flex-col p-3 pb-9">
+<div class="container mx-auto flex max-w-5xl flex-col p-3 pb-9">
 	<Tabs.Root value="stories" class="w-full">
 		<Tabs.List class="w-full">
 			<Tabs.Trigger value="stories" class="w-full">Stories</Tabs.Trigger>
 			<Tabs.Trigger value="selected" class="w-full">Selected</Tabs.Trigger>
 		</Tabs.List>
 		<Tabs.Content value="stories">
-			<section class="flex-grow px-3">
+			<br />
+			<section class="flex flex-col gap-5">
 				{#if $storiesStore}
 					{#each Object.keys($storiesStore) as key}
-						<h1 class="p-5 text-3xl underline">
+						<!-- <Carousel.Root class="w-full"> -->
+						<h1 class="px-3 text-2xl">
 							{key.toUpperCase()}
 						</h1>
+						<!-- <Carousel.Content> -->
 						{#each $storiesStore[key] as story}
-							<Story {story} />
+							<!-- <Carousel.Item> -->
+							<div class="p-1">
+								<Story {story} />
+							</div>
+							<!-- </Carousel.Item> -->
 						{/each}
+						<!-- </Carousel.Content> -->
+						<!-- <Carousel.Previous /> -->
+						<!-- <Carousel.Next /> -->
+						<!-- </Carousel.Root> -->
 					{/each}
 				{/if}
 			</section>
 		</Tabs.Content>
-		<Tabs.Content value="selected">Change your password here.</Tabs.Content>
+		<Tabs.Content value="selected">
+			<br />
+			Change your password here.
+		</Tabs.Content>
 	</Tabs.Root>
 </div>
 

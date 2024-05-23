@@ -13,6 +13,7 @@ export async function GET({ fetch, params, route, cookies }) {
 			.then((r) => r.json())
 			.catch((e) => console.log(e))
 
+		console.log(data.results, 'results')
 		const storiesArr: Story[] = data.results.map((story: Story) => {
 			return {
 				section: story.section,
@@ -20,7 +21,7 @@ export async function GET({ fetch, params, route, cookies }) {
 				url: story.url,
 				description: story.abstract,
 				selected: false,
-				published_date: story.published_date,
+				updated_date: story.updated_date,
 				multimedia: story.multimedia
 			}
 		})

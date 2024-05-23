@@ -1,4 +1,8 @@
 import { get, type Writable } from 'svelte/store'
+// import { localStorageStore } from './localStorageStore'
+
+// const discardStore = localStorageStore('discardStore', {})
+// const storiesStore = localStorageStore('storiesStore', {})
 
 export const sections = [
 	'arts',
@@ -70,7 +74,7 @@ const containsStory = (stories: StoriesDict, story: Story) => {
 	return false
 }
 
-// export const toggleSelectStory = (storiesStore: Writable<StoriesDict>, story: Story) => {}
+export const toggleSelect = (storiesStore: Writable<StoriesDict>, story: Story) => {}
 
 // export const toggleDiscardStory = (
 // 	storiesStore: Writable<StoriesDict>,

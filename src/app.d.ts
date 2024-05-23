@@ -16,7 +16,7 @@ declare global {
 		url: string
 		description: string
 		selected: boolean
-		published_date: string
+		updated_date: string
 		multimedia: any
 		[key: string]: any
 	}
