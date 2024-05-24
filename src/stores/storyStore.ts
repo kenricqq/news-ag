@@ -99,6 +99,7 @@ export const toggleSelect = (story: Story) => {
 			console.log(s.selected)
 		}
 	})
+	localStorage.setItem('stories', JSON.stringify(stories))
 }
 
 // export const toggleDiscardStory = (
