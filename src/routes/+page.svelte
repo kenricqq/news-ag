@@ -2,7 +2,7 @@
 	import { discardStore, storiesStore, initStories, sections } from '$stores/storyStore'
 	import type { Writable } from 'svelte/store'
 	import { onMount } from 'svelte'
-	import { Select, ScrollArea, Tabs, Carousel } from '$ui'
+	import { Select, ScrollArea, Button, Tabs, Carousel } from '$ui'
 	import Story from '$lib/components/Story.svelte'
 	// import { generateStories } from './api/stories/+server';
 
@@ -81,6 +81,14 @@
 			{/if}
 		</Tabs.Content>
 		<Tabs.Content value="selected">
+			<!-- Trigger -->
+			<button
+				class="btn"
+				data-clipboard-text="Just because you can doesn't mean you should — clipboard.js"
+			>
+				Copy to clipboard
+			</button>
+			<Button class="w-full" variant="outline">Copy</Button>
 			{#if $storiesStore}
 				{#each Object.keys($storiesStore) as key}
 					{#if $storiesStore[key].some((story) => story.selected)}
