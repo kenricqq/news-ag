@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { updateStories, sections } from '$stores/storyStore'
+	import { discardStore, storiesStore, initStories, sections } from '$stores/storyStore'
 	import type { Writable } from 'svelte/store'
 	import { onMount } from 'svelte'
 	import { Select, ScrollArea, Tabs, Carousel } from '$ui'
@@ -14,56 +14,89 @@
 		label: data.sectionQuery
 	}
 
-	import { localStorageStore } from '$stores/localStorageStore'
+	let selectedStories: StoriesDict = {}
 
-	let lastFetched: any, storiesStore: Writable<StoriesDict>, discardStore: Writable<StoriesDict>
+	// let lastFetched: any, storiesStore: Writable<StoriesDict>, discardStore: Writable<StoriesDict>
+
+	// onMount(() => {
+	// 	lastFetched = localStorageStore('lastFetched', new Date().toISOString())
+	// 	discardStore = localStorageStore('discard', {})
+	// 	storiesStore = localStorageStore('stories', {})
+
+	// 	if (data.sectionQuery) {
+	// 		// if query is valid, fetch new stories
+	// 		updateStories(storiesStore, discardStore, lastFetched, data)
+	// 	}
+	// })
+
+	storiesStore.subscribe((storiesDict) => {
+		// selectedStories = storiesDict
+		for (const section of Object.keys($storiesStore)) {
+			for (const story of $storiesStore[section]) {
+				if (story.selected) {
+					if (selectedStories[section]) {
+						selectedStories[section].push(story)
+					} else {
+						selectedStories[section] = [story]
+					}
+				}
+			}
+		}
+	})
 
 	onMount(() => {
-		lastFetched = localStorageStore('lastFetched', new Date().toISOString())
-		discardStore = localStorageStore('discardStore', {})
-		storiesStore = localStorageStore('storiesStore', {})
-
 		if (data.sectionQuery) {
 			// if query is valid, fetch new stories
-			updateStories(storiesStore, discardStore, lastFetched, data)
+			initStories(data)
 		}
 	})
 </script>
 
-<div class="container mx-auto flex max-w-5xl flex-col p-3 pb-9">
+<div class="container mx-auto flex max-w-6xl flex-col p-3 pb-9">
 	<Tabs.Root value="stories" class="w-full">
 		<Tabs.List class="w-full">
 			<Tabs.Trigger value="stories" class="w-full">Stories</Tabs.Trigger>
 			<Tabs.Trigger value="selected" class="w-full">Selected</Tabs.Trigger>
 		</Tabs.List>
 		<Tabs.Content value="stories">
-			<br />
-			<section class="flex flex-col gap-5">
-				{#if $storiesStore}
-					{#each Object.keys($storiesStore) as key}
-						<!-- <Carousel.Root class="w-full"> -->
-						<h1 class="px-3 text-2xl">
-							{key.toUpperCase()}
-						</h1>
-						<!-- <Carousel.Content> -->
+			{#if $storiesStore}
+				{#each Object.keys($storiesStore) as key}
+					<!-- <Carousel.Root class="w-full"> -->
+					<h1 class="sectionTitle">
+						{key.toUpperCase()}
+					</h1>
+					<!-- <Carousel.Content> -->
+					<div class="content">
 						{#each $storiesStore[key] as story}
 							<!-- <Carousel.Item> -->
-							<div class="p-1">
-								<Story {story} />
-							</div>
+							<Story {story} />
 							<!-- </Carousel.Item> -->
 						{/each}
-						<!-- </Carousel.Content> -->
-						<!-- <Carousel.Previous /> -->
-						<!-- <Carousel.Next /> -->
-						<!-- </Carousel.Root> -->
-					{/each}
-				{/if}
-			</section>
+					</div>
+					<!-- </Carousel.Content> -->
+					<!-- <Carousel.Previous /> -->
+					<!-- <Carousel.Next /> -->
+					<!-- </Carousel.Root> -->
+				{/each}
+			{/if}
 		</Tabs.Content>
 		<Tabs.Content value="selected">
-			<br />
-			Change your password here.
+			{#if $storiesStore}
+				{#each Object.keys($storiesStore) as key}
+					{#if $storiesStore[key].some((story) => story.selected)}
+						<h1 class="sectionTitle">
+							{key.toUpperCase()}
+						</h1>
+					{/if}
+					<div class="content">
+						{#each $storiesStore[key] as story}
+							{#if story.selected}
+								<Story {story} />
+							{/if}
+						{/each}
+					</div>
+				{/each}
+			{/if}
 		</Tabs.Content>
 	</Tabs.Root>
 </div>
@@ -84,3 +117,13 @@
 	</Select.Content>
 </Select.Root>
 <button on:click={() => console.log(`get ${sectionObj.value} data`)}>Get Data</button> -->
+
+<style>
+	.sectionTitle {
+		@apply mt-3 px-3 text-2xl;
+	}
+
+	.content {
+		@apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+	}
+</style>

@@ -1,8 +1,8 @@
-import { get, type Writable } from 'svelte/store'
+import { get, writable, type Writable } from 'svelte/store'
 // import { localStorageStore } from './localStorageStore'
 
-// const discardStore = localStorageStore('discardStore', {})
-// const storiesStore = localStorageStore('storiesStore', {})
+export const discardStore: Writable<StoriesDict> = writable({})
+export const storiesStore: Writable<StoriesDict> = writable({})
 
 export const sections = [
 	'arts',
@@ -33,22 +33,39 @@ export const sections = [
 	'world'
 ]
 
-export const updateStories = (
-	storiesStore: Writable<StoriesDict>,
-	discardStore: Writable<StoriesDict>,
-	lastFetched: Writable<string>,
-	data: any
-) => {
+export const initStories = (data: any) => {
+	// get saved stories
+	const discard = localStorage.getItem('discard')
+	if (discard) {
+		discardStore.set(JSON.parse(discard))
+	}
+
+	const stories = localStorage.getItem('stories')
+	if (stories) {
+		storiesStore.set(JSON.parse(stories))
+	}
+
+	let lastFetched = localStorage.getItem('lastFetched')
+	if (!lastFetched) {
+		lastFetched = new Date().toISOString()
+		localStorage.setItem('lastFetched', lastFetched)
+	}
+
+	updateStories(lastFetched, data)
+}
+
+export const updateStories = (lastFetched: string, data: any) => {
 	// lastUpdate, section, stories
 	const { storiesArr } = data
 
-	const prevD = new Date(get(lastFetched))
+	const prevD = new Date(lastFetched)
 	const currD = new Date()
 
 	// if new day, reset all stories store
 	const reset = prevD.toDateString() !== currD.toDateString()
-	lastFetched.set(currD.toISOString())
-	// const reset = true
+
+	// update lastFetched to now
+	localStorage.setItem('lastFetched', new Date().toISOString())
 
 	if (reset) {
 		storiesStore.set({})
@@ -74,7 +91,15 @@ const containsStory = (stories: StoriesDict, story: Story) => {
 	return false
 }
 
-export const toggleSelect = (storiesStore: Writable<StoriesDict>, story: Story) => {}
+export const toggleSelect = (story: Story) => {
+	const stories = get(storiesStore)
+	stories[story.section].forEach((s) => {
+		if (s.url == story.url) {
+			s.selected = !s.selected
+			console.log(s.selected)
+		}
+	})
+}
 
 // export const toggleDiscardStory = (
 // 	storiesStore: Writable<StoriesDict>,
