@@ -29,27 +29,28 @@
 	// 	}
 	// })
 
-	storiesStore.subscribe((storiesDict) => {
-		// selectedStories = storiesDict
-		for (const section of Object.keys($storiesStore)) {
-			for (const story of $storiesStore[section]) {
-				if (story.selected) {
-					if (selectedStories[section]) {
-						selectedStories[section].push(story)
-					} else {
-						selectedStories[section] = [story]
-					}
-				}
-			}
-		}
+	onMount(() => {
+		// if query is valid, fetch new stories
+		initStories(data, data.sectionQuery)
 	})
 
-	onMount(() => {
-		if (data.sectionQuery) {
-			// if query is valid, fetch new stories
-			initStories(data)
+	let message = 'Copy'
+	function copyToClip() {
+		const str = document.getElementById('foo')?.innerHTML
+		message = "Copied!"
+		setTimeout(() => {
+			message = "Copy"
+		}, 700)
+
+		function listener(e: any) {
+			e.clipboardData.setData('text/html', str)
+			e.clipboardData.setData('text/plain', str)
+			e.preventDefault()
 		}
-	})
+		document.addEventListener('copy', listener)
+		document.execCommand('copy')
+		document.removeEventListener('copy', listener)
+	}
 </script>
 
 <div class="container mx-auto flex max-w-6xl flex-col p-3 pb-9">
@@ -62,9 +63,9 @@
 			{#if $storiesStore}
 				{#each Object.keys($storiesStore) as key}
 					<!-- <Carousel.Root class="w-full"> -->
-					<h1 class="sectionTitle">
+					<h3 class="sectionTitle">
 						{key.toUpperCase()}
-					</h1>
+					</h3>
 					<!-- <Carousel.Content> -->
 					<div class="content">
 						{#each $storiesStore[key] as story}
@@ -82,29 +83,26 @@
 		</Tabs.Content>
 		<Tabs.Content value="selected">
 			<!-- Trigger -->
-			<button
-				class="btn"
-				data-clipboard-text="Just because you can doesn't mean you should — clipboard.js"
-			>
-				Copy to clipboard
-			</button>
-			<Button class="w-full" variant="outline">Copy</Button>
-			{#if $storiesStore}
-				{#each Object.keys($storiesStore) as key}
-					{#if $storiesStore[key].some((story) => story.selected)}
-						<h1 class="sectionTitle">
-							{key.toUpperCase()}
-						</h1>
-					{/if}
-					<div class="content">
-						{#each $storiesStore[key] as story}
-							{#if story.selected}
-								<Story {story} />
-							{/if}
-						{/each}
-					</div>
-				{/each}
-			{/if}
+
+			<Button class="w-full" variant="outline" on:click={copyToClip}>{message}</Button>
+			<div id="foo">
+				{#if $storiesStore}
+					{#each Object.keys($storiesStore) as key}
+						{#if $storiesStore[key].some((story) => story.selected)}
+							<h3 class="sectionTitle">
+								{key.toUpperCase()}
+							</h3>
+						{/if}
+						<div class="content">
+							{#each $storiesStore[key] as story}
+								{#if story.selected}
+									<Story {story} selected={true} />
+								{/if}
+							{/each}
+						</div>
+					{/each}
+				{/if}
+			</div>
 		</Tabs.Content>
 	</Tabs.Root>
 </div>

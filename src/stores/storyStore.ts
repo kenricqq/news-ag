@@ -33,7 +33,7 @@ export const sections = [
 	'world'
 ]
 
-export const initStories = (data: any) => {
+export const initStories = (data: any, sectionQuery: string) => {
 	// get saved stories
 	const discard = localStorage.getItem('discard')
 	if (discard) {
@@ -51,7 +51,11 @@ export const initStories = (data: any) => {
 		localStorage.setItem('lastFetched', lastFetched)
 	}
 
-	updateStories(lastFetched, data)
+	console.log('stories, init stories:', get(storiesStore), new Date(lastFetched).toDateString())
+
+	if (sectionQuery) {
+		updateStories(lastFetched, data)
+	}
 }
 
 export const updateStories = (lastFetched: string, data: any) => {
@@ -99,6 +103,7 @@ export const toggleSelect = (story: Story) => {
 			console.log(s.selected)
 		}
 	})
+	storiesStore.set(stories)
 	localStorage.setItem('stories', JSON.stringify(stories))
 }
 
